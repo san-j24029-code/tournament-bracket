@@ -71,15 +71,21 @@ request_("list")
 
 // 対戦者をクリックして勝者を次ラウンドへ進める。
 let bracketRounds = [];
+let bracketParticipantKey = "";
 function render() {
   if (!participants.length) return;
   const size = 2 ** Math.ceil(Math.log2(participants.length));
-  const slots = [...participants].sort((a, b) => (a.seed ?? 999) - (b.seed ?? 999));
-  const byes = size - slots.length;
-  for (let i = 0; i < byes; i++) slots.splice(i * 2 + 1, 0, null);
-  bracketRounds = [Array.from({ length: size / 2 }, (_, i) => ({ a: slots[i * 2], b: slots[i * 2 + 1], winner: null }))];
-  while (bracketRounds.at(-1).length > 1) bracketRounds.push(Array.from({ length: bracketRounds.at(-1).length / 2 }, () => ({ a: null, b: null, winner: null })));
-  bracketRounds[0].forEach((m, i) => { if (m.a && !m.b) selectWinner_(0, i, m.a); if (!m.a && m.b) selectWinner_(0, i, m.b); });
+  const participantKey = participants.map(p => p.id).join(",");
+  const byes = size - participants.length;
+  // 勝者クリック後は既存の状態を保持し、参加者が変わった時だけ初期化する。
+  if (!bracketRounds.length || bracketParticipantKey !== participantKey) {
+    const slots = [...participants].sort((a, b) => (a.seed ?? 999) - (b.seed ?? 999));
+    for (let i = 0; i < byes; i++) slots.splice(i * 2 + 1, 0, null);
+    bracketRounds = [Array.from({ length: size / 2 }, (_, i) => ({ a: slots[i * 2], b: slots[i * 2 + 1], winner: null }))];
+    while (bracketRounds.at(-1).length > 1) bracketRounds.push(Array.from({ length: bracketRounds.at(-1).length / 2 }, () => ({ a: null, b: null, winner: null })));
+    bracketRounds[0].forEach((m, i) => { if (m.a && !m.b) selectWinner_(0, i, m.a); if (!m.a && m.b) selectWinner_(0, i, m.b); });
+    bracketParticipantKey = participantKey;
+  }
   const bracket = document.querySelector("#bracket");
   bracket.style.setProperty("--rounds", bracketRounds.length);
   bracket.innerHTML = bracketRounds.map((round, r) => `<div class="round"><h2>${r === bracketRounds.length - 1 ? "決勝" : `${r + 1}回戦`}</h2>${round.map((m, i) => `<div class="match">${["a", "b"].map(side => m[side] ? `<button class="team ${m.winner?.id === m[side].id ? "winner" : ""}" data-round="${r}" data-match="${i}" data-side="${side}">${m[side].name}</button>` : `<div class="team">—</div>`).join("")}</div>`).join("")}</div>`).join("");
