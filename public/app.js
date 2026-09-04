@@ -4,6 +4,7 @@ let participants = [];
 let tournamentId = localStorage.getItem("tournamentId") || crypto.randomUUID();
 localStorage.setItem("tournamentId", tournamentId);
 let adminPassword = sessionStorage.getItem("adminPassword") || "";
+const pageRole = location.pathname.endsWith("/admin.html") ? "admin" : location.pathname.endsWith("/user.html") ? "user" : "select";
 
 function enterAsUser_() {
   document.body.classList.add("viewer-mode");
@@ -106,6 +107,8 @@ document.querySelector("#admin-login-start").addEventListener("click", async () 
     document.querySelectorAll(".admin-only").forEach(element => { element.style.display = "block"; });
   } catch (error) { alert(error.message); }
 });
+
+if (pageRole === "user") enterAsUser_();
 
 request_("list", { tournamentId })
   .then(data => { participants = normalizeParticipants_(data.participants); render(); })
