@@ -23,6 +23,8 @@
       #login-screen h1 { font-size: 1.5rem; }
       #login-screen button { margin: .35rem; }
       .hidden { display: none !important; }
+      .viewer-mode .team, .viewer-mode .delete { pointer-events: none; cursor: default; }
+      .viewer-mode .delete { display: none; }
       .team { width: 100%; color: #172033; text-align: left; background: #f8faff; }
       .delete { margin-top: .25rem; padding: .25rem .45rem; color: #b42318; border-color: #f2c5c1; background: #fff; font-size: .75rem; }
       .bracket { display: grid; grid-template-columns: repeat(var(--rounds, 1), minmax(180px, 1fr)); gap: 1rem; align-items: start; }
@@ -54,7 +56,6 @@
       </div>
       <p id="status">参加者を登録してください</p>
       <section id="bracket" class="bracket" aria-label="トーナメント表"></section>
-      <footer>HTML と CSS だけで構成されています。</footer>
     </main>
     <script src="./app.js" defer></script>
   </body>
