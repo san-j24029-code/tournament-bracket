@@ -36,6 +36,7 @@
       .match { position: relative; margin: 0 0 1.25rem; padding: .55rem; border: 1px solid #3f4d8e; border-radius: 10px; background: #0d1324; }
       .match::before { content: "VS"; position: absolute; z-index: 1; top: 50%; left: 50%; transform: translate(-50%, -50%); padding: .15rem .35rem; border: 1px solid #ffcf4a; border-radius: 999px; color: #ffcf4a; background: #11182b; font-size: .65rem; font-weight: 700; }
       .round .match::before { content: "VS"; display: block; border: 1px solid #ffcf4a; }
+      .round:not(:first-child) .match::before { content: "VS"; display: block; top: 50%; left: 50%; width: auto; border: 1px solid #ffcf4a; }
     </style>
   </head>
   <body class="viewer-mode">
