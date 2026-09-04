@@ -5,25 +5,28 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>トーナメントブラケット</title>
     <style>
-      :root { font-family: system-ui, sans-serif; color: #172033; background: #f4f7fb; }
+      :root { font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace; color: #172033; background: #eef3f8; }
       body { margin: 0; min-height: 100vh; display: grid; place-items: center; }
-      main { width: min(92vw, 760px); padding: 2rem; border: 1px solid #dbe3ef; border-radius: 18px; background: #fff; box-shadow: 0 12px 32px rgb(31 52 86 / 10%); }
-      h1 { margin: 0 0 .5rem; font-size: clamp(1.6rem, 4vw, 2.4rem); }
+      main { width: min(92vw, 820px); padding: 2rem; border: 1px solid #cbd7e5; border-radius: 12px; background: #fff; box-shadow: 0 16px 36px rgb(31 52 86 / 12%); }
+      main::before { content: "●  ●  ●   tournament-bracket / main"; display: block; margin: -2rem -2rem 1.75rem; padding: .75rem 1rem; border-bottom: 1px solid #cbd7e5; color: #718096; background: #f7f9fc; font-size: .75rem; }
+      h1 { margin: 0 0 .5rem; color: #263b58; font-size: clamp(1.4rem, 4vw, 2.2rem); }
+      h1::before { content: ">_ "; color: #16a085; }
       p { margin: 0 0 1.5rem; color: #5e6b82; }
       form { display: flex; gap: .5rem; margin-bottom: 1.5rem; }
       input, button { padding: .7rem .8rem; border: 1px solid #dbe3ef; border-radius: 8px; font: inherit; }
       input { flex: 1; }
-      button { cursor: pointer; color: #fff; border-color: #6c63ff; background: #6c63ff; }
-      #new-tournament { margin-bottom: 1rem; background: #53657d; border-color: #53657d; }
+      button { cursor: pointer; color: #fff; border-color: #147d68; background: #147d68; }
+      #new-tournament { margin-bottom: 1rem; color: #53657d; border-color: #cbd7e5; background: #f7f9fc; }
       .team { width: 100%; color: #172033; text-align: left; background: #f8faff; }
       .delete { margin-top: .25rem; padding: .25rem .45rem; color: #b42318; border-color: #f2c5c1; background: #fff; font-size: .75rem; }
       .bracket { display: grid; grid-template-columns: repeat(var(--rounds, 1), minmax(180px, 1fr)); gap: 1rem; align-items: start; }
-      h2 { margin: 0 0 .75rem; font-size: .85rem; color: #68758a; letter-spacing: .08em; }
+      h2 { margin: 0 0 .75rem; font-size: .8rem; color: #147d68; letter-spacing: .08em; }
+      h2::before { content: "// "; color: #9aaabd; }
       .match { display: grid; gap: .4rem; margin-bottom: 1rem; }
-      .team { padding: .7rem .8rem; border: 1px solid #dbe3ef; border-radius: 8px; background: #f8faff; }
+      .team { padding: .7rem .8rem; border: 1px solid #cbd7e5; border-radius: 6px; background: #f7f9fc; }
       .winner { border-color: #6c63ff; background: #f0efff; font-weight: 700; }
       .champion { border-color: #f0b429; background: #fff8e5; }
-      footer { margin-top: 1rem; font-size: .8rem; color: #7b8799; }
+      footer { margin-top: 1rem; font-size: .75rem; color: #7b8799; }
       @media (max-width: 600px) { main { padding: 1.25rem; } .bracket { grid-template-columns: 1fr; } }
     </style>
   </head>
