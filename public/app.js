@@ -22,7 +22,8 @@ function normalizeParticipants_(items) {
 function createRounds(participants) {
   if (!participants.length) throw new Error("参加者がいません");
 
-  const size = 2 ** Math.ceil(Math.log2(participants.length));
+  // 参加人数をそのまま使い、奇数のときだけ1人を不戦勝にする。
+  const size = participants.length;
   const slots = [...participants].sort((a, b) => (a.seed ?? 999) - (b.seed ?? 999));
   const byes = size - slots.length;
 
@@ -173,15 +174,15 @@ let bracketRounds = [];
 let bracketParticipantKey = "";
 function render() {
   if (!participants.length) return;
-  const size = 2 ** Math.ceil(Math.log2(participants.length));
+  const size = participants.length;
   const participantKey = participants.map(p => p.id).join(",");
-  const byes = size - participants.length;
+  const byes = size % 2;
   // 勝者クリック後は既存の状態を保持し、参加者が変わった時だけ初期化する。
   if (!bracketRounds.length || bracketParticipantKey !== participantKey) {
     const slots = [...participants].sort((a, b) => (a.seed ?? 999) - (b.seed ?? 999));
-    for (let i = 0; i < byes; i++) slots.splice(i * 2 + 1, 0, null);
-    bracketRounds = [Array.from({ length: size / 2 }, (_, i) => ({ a: slots[i * 2], b: slots[i * 2 + 1], winner: null }))];
-    while (bracketRounds.at(-1).length > 1) bracketRounds.push(Array.from({ length: bracketRounds.at(-1).length / 2 }, () => ({ a: null, b: null, winner: null })));
+    if (slots.length % 2) slots.push(null);
+    bracketRounds = [Array.from({ length: slots.length / 2 }, (_, i) => ({ a: slots[i * 2], b: slots[i * 2 + 1], winner: null }))];
+    while (bracketRounds.at(-1).length > 1) bracketRounds.push(Array.from({ length: Math.ceil(bracketRounds.at(-1).length / 2) }, () => ({ a: null, b: null, winner: null })));
     bracketRounds[0].forEach((m, i) => { if (m.a && !m.b) selectWinner_(0, i, m.a); if (!m.a && m.b) selectWinner_(0, i, m.b); });
     bracketParticipantKey = participantKey;
   }
