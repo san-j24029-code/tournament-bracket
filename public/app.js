@@ -82,7 +82,7 @@ document.querySelector("#participant-form").addEventListener("submit", async eve
   } catch (error) { document.querySelector("#status").textContent = error.message; }
 });
 
-document.querySelector("#admin-login").addEventListener("click", async () => {
+document.querySelector("#admin-login")?.addEventListener("click", async () => {
   const password = prompt("管理者パスワードを入力してください");
   if (password === null) return;
   try {
