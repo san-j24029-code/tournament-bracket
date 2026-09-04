@@ -7,11 +7,11 @@ function doGet(e) {
     if (mode === 'list') return jsonResponse_({ participants: getParticipants_(e.parameter.tournamentId) });
     if (mode === 'login') return login_(e.parameter);
     if (mode === 'get_winners') return getWinners_(e.parameter);
+    if (mode === 'save_winner') return saveWinner_(e.parameter);
     requireAdmin_(e.parameter.password);
     if (mode === 'register') return registerParticipant_(e.parameter);
     if (mode === 'delete') return deleteParticipant_(e.parameter);
     if (mode === 'reset') return resetTournament_(e.parameter);
-    if (mode === 'save_winner') return saveWinner_(e.parameter);
     throw new Error(`未対応のmodeです: ${mode}`);
   } catch (error) {
     return jsonResponse_({ error: error.message });

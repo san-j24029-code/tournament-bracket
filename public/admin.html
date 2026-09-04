@@ -17,6 +17,8 @@
       input { flex: 1; }
       button { cursor: pointer; color: #fff; border-color: #147d68; background: #147d68; }
       #new-tournament { margin-bottom: 1rem; color: #53657d; border-color: #cbd7e5; background: #f7f9fc; }
+      #new-tournament, #reset-tournament, .delete, .team { display: none; }
+      #participant-form, #participant-form .team { display: flex; }
       .team { width: 100%; color: #172033; text-align: left; background: #f8faff; }
       .delete { margin-top: .25rem; padding: .25rem .45rem; color: #b42318; border-color: #f2c5c1; background: #fff; font-size: .75rem; }
       .bracket { display: grid; grid-template-columns: repeat(var(--rounds, 1), minmax(180px, 1fr)); gap: 1rem; align-items: start; }

@@ -109,6 +109,7 @@ document.querySelector("#admin-login-start")?.addEventListener("click", async ()
 
 if (pageRole === "user") enterAsUser_();
 if (pageRole === "admin") {
+  document.body.classList.add("admin-mode");
   document.querySelector("main")?.classList.remove("hidden");
   document.querySelector("#login-screen")?.classList.add("hidden");
   document.querySelectorAll(".admin-only").forEach(element => { element.style.display = "block"; });
@@ -211,9 +212,8 @@ function resetAfter_(r, i) {
 }
 
 document.querySelector("#bracket").addEventListener("click", event => {
-  // 利用者は閲覧のみ。勝敗を決められるのは管理者だけ。
-  if (!adminPassword) return;
   const deleteButton = event.target.closest("[data-delete-id]");
+  if (deleteButton && !adminPassword) return;
   if (deleteButton) {
     if (!confirm("この参加者を削除しますか？")) return;
     request_("delete", { id: deleteButton.dataset.deleteId })
@@ -224,6 +224,7 @@ document.querySelector("#bracket").addEventListener("click", event => {
   }
   const button = event.target.closest("button[data-round]");
   if (!button) return;
+  if (pageRole === "admin") return;
   const r = Number(button.dataset.round), i = Number(button.dataset.match);
   const match = bracketRounds[r][i];
   if (match[button.dataset.side]) {
