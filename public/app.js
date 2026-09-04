@@ -175,6 +175,8 @@ function render() {
   bracket.style.setProperty("--rounds", bracketRounds.length);
   bracket.innerHTML = bracketRounds.map((round, r) => `<div class="round"><h2>${r === bracketRounds.length - 1 ? "決勝" : `${r + 1}回戦`}</h2>${round.map((m, i) => `<div class="match">${["a", "b"].map(side => m[side] ? `<button class="team ${m.winner?.id === m[side].id ? "winner" : ""}" data-round="${r}" data-match="${i}" data-side="${side}">${m[side].name}</button><button class="delete" data-delete-id="${m[side].id}">削除</button>` : `<div class="team">—</div>`).join("")}</div>`).join("")}</div>`).join("");
   document.querySelector("#status").textContent = `${participants.length}人（不戦勝 ${byes}枠）※勝者をクリック`;
+  const list = document.querySelector("#participant-list ul");
+  if (list) list.innerHTML = participants.map(p => `<li>${p.name}</li>`).join("");
 }
 
 function selectWinner_(r, i, winner) {

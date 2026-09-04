@@ -17,6 +17,9 @@
       input { flex: 1; }
       button { cursor: pointer; color: #fff; border-color: #147d68; background: #147d68; }
       #new-tournament { margin-bottom: 1rem; color: #53657d; border-color: #cbd7e5; background: #f7f9fc; }
+      #participant-list { margin: 1rem 0; padding: 1rem; border: 1px solid #3f4d8e; border-radius: 8px; background: #0d1324; }
+      #participant-list h2 { margin-top: 0; }
+      #participant-list ul { margin: 0; padding-left: 1.5rem; color: #eaf0ff; }
       #new-tournament, #reset-tournament, .delete, .team { display: none; }
       #participant-form, #participant-form .team { display: flex; }
       .team { width: 100%; color: #172033; text-align: left; background: #f8faff; }
@@ -39,6 +42,7 @@
       <button id="new-tournament" type="button">新しいトーナメント</button>
       <button id="reset-tournament" type="button">現在の大会をリセット</button>
       <form id="participant-form"><input id="participant-name" placeholder="参加者名を入力" required /><button type="submit">登録</button></form>
+      <section id="participant-list" aria-label="登録済み参加者"><h2>登録済み参加者</h2><ul></ul></section>
       <p id="status">参加者を登録してください</p>
       <section id="bracket" class="bracket" aria-label="トーナメント表"></section>
     </main>
