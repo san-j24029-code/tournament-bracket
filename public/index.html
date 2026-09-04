@@ -27,16 +27,28 @@
       .winner { border-color: #ff6bd6; background: #38224c; font-weight: 700; }
       .champion { border-color: #f0b429; background: #fff8e5; }
       footer { margin-top: 1rem; font-size: .75rem; color: #7b8799; }
+      #login-screen { width: min(92vw, 420px); padding: 2rem; border: 2px solid #343e7a; border-radius: 16px; background: #11182b; text-align: center; }
+      #login-screen button { margin: .35rem; }
+      .hidden { display: none !important; }
+      .admin-only { display: none; }
       @media (max-width: 600px) { main { padding: 1.25rem; } .bracket { grid-template-columns: 1fr; } }
     </style>
   </head>
   <body>
-    <main>
+    <section id="login-screen">
+      <h1>トーナメントシステム</h1>
+      <p>管理者または利用者を選択してください。</p>
+      <button id="admin-login-start" type="button">管理者ログイン</button>
+      <button id="user-login-start" type="button">利用者として閲覧</button>
+    </section>
+    <main class="hidden">
       <h1>U-16プログラミングコンテスト静岡大会</h1>
       <p>参加者を手動登録してトーナメント表を作成します。</p>
-      <button id="new-tournament" type="button">新しいトーナメント</button>
-      <button id="reset-tournament" type="button">現在の大会をリセット</button>
-      <form id="participant-form"><input id="participant-name" placeholder="参加者名を入力" required /><button type="submit">登録</button></form>
+      <div class="admin-only">
+        <button id="new-tournament" type="button">新しいトーナメント</button>
+        <button id="reset-tournament" type="button">現在の大会をリセット</button>
+        <form id="participant-form"><input id="participant-name" placeholder="参加者名を入力" required /><button type="submit">登録</button></form>
+      </div>
       <p id="status">参加者を登録してください</p>
       <section id="bracket" class="bracket" aria-label="トーナメント表"></section>
     </main>
