@@ -3,6 +3,7 @@ const API_URL = "https://script.google.com/macros/s/AKfycbz0HCH0S-yDo3HCVMLgSVZj
 let participants = [];
 let tournamentId = localStorage.getItem("tournamentId") || crypto.randomUUID();
 localStorage.setItem("tournamentId", tournamentId);
+let adminPassword = sessionStorage.getItem("adminPassword") || "";
 
 function normalizeParticipants_(items) {
   return (items || []).map((item, index) => typeof item === "string"
@@ -51,7 +52,7 @@ function render() {
 }
 
 async function request_(mode, params = {}) {
-  const query = new URLSearchParams({ mode, ...params });
+  const query = new URLSearchParams({ mode, ...params, ...(adminPassword ? { password: adminPassword } : {}) });
   const response = await fetch(`${API_URL}?${query}`, { cache: "no-store" });
   const data = await response.json();
   if (data.error) throw new Error(data.error);
@@ -73,6 +74,18 @@ document.querySelector("#participant-form").addEventListener("submit", async eve
   } catch (error) { document.querySelector("#status").textContent = error.message; }
 });
 
+document.querySelector("#admin-login").addEventListener("click", async () => {
+  const password = prompt("管理者パスワードを入力してください");
+  if (password === null) return;
+  try {
+    await request_("login", { password });
+    adminPassword = password;
+    sessionStorage.setItem("adminPassword", password);
+    document.querySelectorAll(".admin-only").forEach(element => { element.style.display = "block"; });
+    document.querySelector("#admin-login").textContent = "管理者ログイン済み";
+  } catch (error) { alert(error.message); }
+});
+
 request_("list", { tournamentId })
   .then(data => { participants = normalizeParticipants_(data.participants); render(); })
   .catch(error => { document.querySelector("#status").textContent = error.message; });
@@ -84,6 +97,19 @@ document.querySelector("#new-tournament").addEventListener("click", () => {
   bracketRounds = [];
   bracketParticipantKey = "";
   render();
+});
+
+document.querySelector("#reset-tournament").addEventListener("click", async () => {
+  if (!participants.length || !confirm("現在の大会の参加者をすべて削除しますか？")) return;
+  try {
+    document.querySelector("#status").textContent = "リセットしています…";
+    await request_("reset", { tournamentId });
+    participants = [];
+    bracketRounds = [];
+    bracketParticipantKey = "";
+    document.querySelector("#bracket").innerHTML = "";
+    document.querySelector("#status").textContent = "参加者を登録してください";
+  } catch (error) { document.querySelector("#status").textContent = error.message; }
 });
 
 // 対戦者をクリックして勝者を次ラウンドへ進める。

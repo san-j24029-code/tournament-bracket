@@ -1,15 +1,28 @@
 const PARTICIPANT_SHEET = '参加者';
+const ADMIN_PASSWORD = 'admin';
 
 function doGet(e) {
   try {
     const mode = e?.parameter?.mode || 'list';
     if (mode === 'list') return jsonResponse_({ participants: getParticipants_(e.parameter.tournamentId) });
+    if (mode === 'login') return login_(e.parameter);
+    requireAdmin_(e.parameter.password);
     if (mode === 'register') return registerParticipant_(e.parameter);
     if (mode === 'delete') return deleteParticipant_(e.parameter);
+    if (mode === 'reset') return resetTournament_(e.parameter);
     throw new Error(`未対応のmodeです: ${mode}`);
   } catch (error) {
     return jsonResponse_({ error: error.message });
   }
+}
+
+function login_(parameter) {
+  if (String(parameter.password || '') !== ADMIN_PASSWORD) throw new Error('パスワードが違います');
+  return jsonResponse_({ authenticated: true });
+}
+
+function requireAdmin_(password) {
+  if (String(password || '') !== ADMIN_PASSWORD) throw new Error('管理者ログインが必要です');
 }
 
 function deleteParticipant_(parameter) {
@@ -21,6 +34,17 @@ function deleteParticipant_(parameter) {
   if (index < 0) throw new Error('参加者が見つかりません');
   sheet.deleteRow(index + 2);
   return jsonResponse_({ deleted: id });
+}
+
+function resetTournament_(parameter) {
+  const tournamentId = String(parameter.tournamentId || '').trim();
+  if (!tournamentId) throw new Error('大会IDは必須です');
+  const sheet = getParticipantSheet_();
+  const values = sheet.getDataRange().getValues();
+  for (let i = values.length - 1; i >= 1; i--) {
+    if (String(values[i][4]) === tournamentId) sheet.deleteRow(i + 1);
+  }
+  return jsonResponse_({ reset: true });
 }
 
 function registerParticipant_(parameter) {
