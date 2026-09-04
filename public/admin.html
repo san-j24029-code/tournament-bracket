@@ -30,6 +30,9 @@
       h2 { margin: 0 0 .75rem; font-size: .8rem; color: #147d68; letter-spacing: .08em; }
       h2::before { content: "// "; color: #9aaabd; }
       .match { display: grid; gap: .4rem; margin-bottom: 1rem; }
+      .round { position: relative; }
+      .round:not(:last-child) .match::after { content: ""; position: absolute; top: 50%; right: -1rem; width: 1rem; border-top: 2px solid #69f7d0; opacity: .75; }
+      .round:not(:first-child) .match::before { content: ""; position: absolute; top: 50%; left: -1rem; width: 1rem; border-top: 2px solid #69f7d0; opacity: .75; }
       .team { padding: .7rem .8rem; border: 1px solid #cbd7e5; border-radius: 6px; background: #f7f9fc; }
       .winner { border-color: #6c63ff; background: #f0efff; font-weight: 700; }
       .champion { border-color: #f0b429; background: #fff8e5; }
