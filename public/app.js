@@ -154,6 +154,20 @@ document.querySelector("#reset-tournament").addEventListener("click", async () =
   } catch (error) { document.querySelector("#status").textContent = error.message; }
 });
 
+document.querySelector("#delete-all")?.addEventListener("click", async () => {
+  if (!participants.length || !confirm("現在の大会の参加者をすべて削除しますか？")) return;
+  try {
+    document.querySelector("#status").textContent = "一括削除しています…";
+    await request_("reset", { tournamentId });
+    participants = [];
+    bracketRounds = [];
+    bracketParticipantKey = "";
+    document.querySelector("#participant-list ul")?.replaceChildren();
+    document.querySelector("#bracket").innerHTML = "";
+    document.querySelector("#status").textContent = "参加者を登録してください";
+  } catch (error) { document.querySelector("#status").textContent = error.message; }
+});
+
 // 対戦者をクリックして勝者を次ラウンドへ進める。
 let bracketRounds = [];
 let bracketParticipantKey = "";
@@ -213,7 +227,7 @@ function resetAfter_(r, i) {
   }
 }
 
-document.querySelector("#bracket").addEventListener("click", event => {
+document.addEventListener("click", event => {
   const deleteButton = event.target.closest("[data-delete-id]");
   if (deleteButton && !adminPassword) return;
   if (deleteButton) {
