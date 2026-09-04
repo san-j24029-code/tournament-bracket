@@ -3,13 +3,14 @@ const API_URL = "https://script.google.com/macros/s/AKfycbz0HCH0S-yDo3HCVMLgSVZj
 let participants = [];
 let tournamentId = localStorage.getItem("tournamentId") || crypto.randomUUID();
 localStorage.setItem("tournamentId", tournamentId);
-let adminPassword = sessionStorage.getItem("adminPassword") || "";
 const pageRole = location.pathname.endsWith("/admin.html") ? "admin" : location.pathname.endsWith("/user.html") ? "user" : "select";
+// user.htmlでは、管理者のセッションが残っていても必ず閲覧専用にする。
+let adminPassword = pageRole === "user" ? "" : sessionStorage.getItem("adminPassword") || "";
 
 function enterAsUser_() {
   document.body.classList.add("viewer-mode");
-  document.querySelector("#login-screen").classList.add("hidden");
-  document.querySelector("main").classList.remove("hidden");
+  document.querySelector("#login-screen")?.classList.add("hidden");
+  document.querySelector("main")?.classList.remove("hidden");
 }
 
 function normalizeParticipants_(items) {
@@ -94,8 +95,8 @@ document.querySelector("#admin-login").addEventListener("click", async () => {
   } catch (error) { alert(error.message); }
 });
 
-document.querySelector("#user-login-start").addEventListener("click", enterAsUser_);
-document.querySelector("#admin-login-start").addEventListener("click", async () => {
+document.querySelector("#user-login-start")?.addEventListener("click", enterAsUser_);
+document.querySelector("#admin-login-start")?.addEventListener("click", async () => {
   const password = prompt("管理者パスワードを入力してください");
   if (password === null) return;
   try {
