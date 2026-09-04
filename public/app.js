@@ -6,6 +6,7 @@ localStorage.setItem("tournamentId", tournamentId);
 let adminPassword = sessionStorage.getItem("adminPassword") || "";
 
 function enterAsUser_() {
+  document.body.classList.add("viewer-mode");
   document.querySelector("#login-screen").classList.add("hidden");
   document.querySelector("main").classList.remove("hidden");
 }
@@ -86,6 +87,7 @@ document.querySelector("#admin-login").addEventListener("click", async () => {
     await request_("login", { password });
     adminPassword = password;
     sessionStorage.setItem("adminPassword", password);
+    document.body.classList.remove("viewer-mode");
     document.querySelectorAll(".admin-only").forEach(element => { element.style.display = "block"; });
     document.querySelector("#admin-login").textContent = "管理者ログイン済み";
   } catch (error) { alert(error.message); }
@@ -108,6 +110,18 @@ document.querySelector("#admin-login-start").addEventListener("click", async () 
 request_("list", { tournamentId })
   .then(data => { participants = normalizeParticipants_(data.participants); render(); })
   .catch(error => { document.querySelector("#status").textContent = error.message; });
+
+// 利用者画面は30秒ごとに最新の参加者情報を取得する。
+setInterval(async () => {
+  if (adminPassword) return;
+  try {
+    const data = await request_("list", { tournamentId });
+    participants = normalizeParticipants_(data.participants);
+    render();
+  } catch (error) {
+    document.querySelector("#status").textContent = error.message;
+  }
+}, 30000);
 
 document.querySelector("#new-tournament").addEventListener("click", () => {
   tournamentId = crypto.randomUUID();
@@ -178,6 +192,8 @@ function resetAfter_(r, i) {
 }
 
 document.querySelector("#bracket").addEventListener("click", event => {
+  // 利用者は閲覧のみ。勝敗を決められるのは管理者だけ。
+  if (!adminPassword) return;
   const deleteButton = event.target.closest("[data-delete-id]");
   if (deleteButton) {
     if (!confirm("この参加者を削除しますか？")) return;
