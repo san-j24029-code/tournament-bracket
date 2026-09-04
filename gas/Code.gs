@@ -5,10 +5,22 @@ function doGet(e) {
     const mode = e?.parameter?.mode || 'list';
     if (mode === 'list') return jsonResponse_({ participants: getParticipants_() });
     if (mode === 'register') return registerParticipant_(e.parameter);
+    if (mode === 'delete') return deleteParticipant_(e.parameter);
     throw new Error(`未対応のmodeです: ${mode}`);
   } catch (error) {
     return jsonResponse_({ error: error.message });
   }
+}
+
+function deleteParticipant_(parameter) {
+  const id = String(parameter.id || '').trim();
+  if (!id) throw new Error('削除対象のIDがありません');
+  const sheet = getParticipantSheet_();
+  const ids = sheet.getRange(2, 1, Math.max(sheet.getLastRow() - 1, 1), 1).getValues();
+  const index = ids.findIndex(row => String(row[0]) === id);
+  if (index < 0) throw new Error('参加者が見つかりません');
+  sheet.deleteRow(index + 2);
+  return jsonResponse_({ deleted: id });
 }
 
 function registerParticipant_(parameter) {

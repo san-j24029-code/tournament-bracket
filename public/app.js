@@ -94,19 +94,46 @@ function render() {
   }
   const bracket = document.querySelector("#bracket");
   bracket.style.setProperty("--rounds", bracketRounds.length);
-  bracket.innerHTML = bracketRounds.map((round, r) => `<div class="round"><h2>${r === bracketRounds.length - 1 ? "決勝" : `${r + 1}回戦`}</h2>${round.map((m, i) => `<div class="match">${["a", "b"].map(side => m[side] ? `<button class="team ${m.winner?.id === m[side].id ? "winner" : ""}" data-round="${r}" data-match="${i}" data-side="${side}">${m[side].name}</button>` : `<div class="team">—</div>`).join("")}</div>`).join("")}</div>`).join("");
+  bracket.innerHTML = bracketRounds.map((round, r) => `<div class="round"><h2>${r === bracketRounds.length - 1 ? "決勝" : `${r + 1}回戦`}</h2>${round.map((m, i) => `<div class="match">${["a", "b"].map(side => m[side] ? `<button class="team ${m.winner?.id === m[side].id ? "winner" : ""}" data-round="${r}" data-match="${i}" data-side="${side}">${m[side].name}</button><button class="delete" data-delete-id="${m[side].id}">削除</button>` : `<div class="team">—</div>`).join("")}</div>`).join("")}</div>`).join("");
   document.querySelector("#status").textContent = `${participants.length}人（不戦勝 ${byes}枠）※勝者をクリック`;
 }
 
 function selectWinner_(r, i, winner) {
-  const match = bracketRounds[r][i]; match.winner = winner;
-  if (r < bracketRounds.length - 1) bracketRounds[r + 1][Math.floor(i / 2)][i % 2 ? "b" : "a"] = winner;
+  const match = bracketRounds[r][i];
+  const nextIndex = Math.floor(i / 2);
+  const side = i % 2 ? "b" : "a";
+  if (r < bracketRounds.length - 1 && match.winner && match.winner.id !== winner.id) {
+    const next = bracketRounds[r + 1][nextIndex];
+    if (next.winner?.id === match.winner.id) resetAfter_(r + 1, nextIndex);
+    next[side] = null;
+  }
+  match.winner = winner;
+  if (r < bracketRounds.length - 1) bracketRounds[r + 1][nextIndex][side] = winner;
+}
+
+function resetAfter_(r, i) {
+  const match = bracketRounds[r][i];
+  match.winner = null;
+  if (r < bracketRounds.length - 1) {
+    const next = bracketRounds[r + 1][Math.floor(i / 2)];
+    next[i % 2 ? "b" : "a"] = null;
+    if (next.winner) resetAfter_(r + 1, Math.floor(i / 2));
+  }
 }
 
 document.querySelector("#bracket").addEventListener("click", event => {
+  const deleteButton = event.target.closest("[data-delete-id]");
+  if (deleteButton) {
+    if (!confirm("この参加者を削除しますか？")) return;
+    request_("delete", { id: deleteButton.dataset.deleteId })
+      .then(() => request_("list"))
+      .then(data => { participants = normalizeParticipants_(data.participants); bracketRounds = []; bracketParticipantKey = ""; render(); })
+      .catch(error => { document.querySelector("#status").textContent = error.message; });
+    return;
+  }
   const button = event.target.closest("button[data-round]");
   if (!button) return;
   const r = Number(button.dataset.round), i = Number(button.dataset.match);
   const match = bracketRounds[r][i];
-  if (!match.winner && match[button.dataset.side]) { selectWinner_(r, i, match[button.dataset.side]); render(); }
+  if (match[button.dataset.side]) { selectWinner_(r, i, match[button.dataset.side]); render(); }
 });
