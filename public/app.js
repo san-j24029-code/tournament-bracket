@@ -2,6 +2,12 @@
 const API_URL = "https://script.google.com/macros/s/AKfycbz0HCH0S-yDo3HCVMLgSVZjcVXJrqGsTlldbS_wefz9q7Mzx9coswzwsSt6EBhpHDOPJg/exec";
 let participants = [];
 
+function normalizeParticipants_(items) {
+  return (items || []).map((item, index) => typeof item === "string"
+    ? { id: `P${String(index + 1).padStart(3, "0")}`, name: item, seed: index + 1 }
+    : { ...item, id: item.id || `P${String(index + 1).padStart(3, "0")}`, name: item.name || item["参加者名"] || "名前未設定", seed: item.seed || index + 1 });
+}
+
 function createRounds(participants) {
   if (!participants.length) throw new Error("参加者がいません");
 
@@ -60,13 +66,13 @@ document.querySelector("#participant-form").addEventListener("submit", async eve
     await request_("register", { name });
     input.value = "";
     const data = await request_("list");
-    participants = data.participants;
+    participants = normalizeParticipants_(data.participants);
     render();
   } catch (error) { document.querySelector("#status").textContent = error.message; }
 });
 
 request_("list")
-  .then(data => { participants = data.participants; render(); })
+  .then(data => { participants = normalizeParticipants_(data.participants); render(); })
   .catch(error => { document.querySelector("#status").textContent = error.message; });
 
 // 対戦者をクリックして勝者を次ラウンドへ進める。
