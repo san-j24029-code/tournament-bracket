@@ -95,7 +95,7 @@ document.querySelector("#admin-login")?.addEventListener("click", async () => {
   } catch (error) { alert(error.message); }
 });
 
-document.querySelector("#user-login-start")?.addEventListener("click", enterAsUser_);
+document.querySelector("#user-login-start")?.addEventListener("click", () => { location.href = "./user.html"; });
 document.querySelector("#admin-login-start")?.addEventListener("click", async () => {
   const password = prompt("管理者パスワードを入力してください");
   if (password === null) return;
@@ -103,13 +103,16 @@ document.querySelector("#admin-login-start")?.addEventListener("click", async ()
     await request_("login", { password });
     adminPassword = password;
     sessionStorage.setItem("adminPassword", password);
-    document.querySelector("#login-screen").classList.add("hidden");
-    document.querySelector("main").classList.remove("hidden");
-    document.querySelectorAll(".admin-only").forEach(element => { element.style.display = "block"; });
+    location.href = "./admin.html";
   } catch (error) { alert(error.message); }
 });
 
 if (pageRole === "user") enterAsUser_();
+if (pageRole === "admin") {
+  document.querySelector("main")?.classList.remove("hidden");
+  document.querySelector("#login-screen")?.classList.add("hidden");
+  document.querySelectorAll(".admin-only").forEach(element => { element.style.display = "block"; });
+}
 
 request_("list", { tournamentId })
   .then(data => { participants = normalizeParticipants_(data.participants); render(); })
