@@ -118,7 +118,7 @@ request_("list", { tournamentId })
   .then(data => { participants = normalizeParticipants_(data.participants); render(); })
   .catch(error => { document.querySelector("#status").textContent = error.message; });
 
-// 利用者画面は30秒ごとに最新の参加者情報を取得する。
+// 利用者画面は5秒ごとに最新の参加者情報を取得する。
 setInterval(async () => {
   if (adminPassword) return;
   try {
@@ -128,7 +128,7 @@ setInterval(async () => {
   } catch (error) {
     document.querySelector("#status").textContent = error.message;
   }
-}, 30000);
+}, 5000);
 
 document.querySelector("#new-tournament").addEventListener("click", () => {
   tournamentId = crypto.randomUUID();
