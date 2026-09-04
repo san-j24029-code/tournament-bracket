@@ -10,7 +10,7 @@
       main { width: min(92vw, 760px); padding: 2rem; border: 1px solid #dbe3ef; border-radius: 18px; background: #fff; box-shadow: 0 12px 32px rgb(31 52 86 / 10%); }
       h1 { margin: 0 0 .5rem; font-size: clamp(1.6rem, 4vw, 2.4rem); }
       p { margin: 0 0 1.5rem; color: #5e6b82; }
-      .bracket { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; align-items: center; }
+      .bracket { display: grid; grid-template-columns: repeat(var(--rounds, 1), minmax(180px, 1fr)); gap: 1rem; align-items: start; }
       h2 { margin: 0 0 .75rem; font-size: .85rem; color: #68758a; letter-spacing: .08em; }
       .match { display: grid; gap: .4rem; margin-bottom: 1rem; }
       .team { padding: .7rem .8rem; border: 1px solid #dbe3ef; border-radius: 8px; background: #f8faff; }
@@ -23,13 +23,10 @@
   <body>
     <main>
       <h1>春季トーナメント</h1>
-      <p>Google Apps Script を使わずに表示できる静的なサンプルです。</p>
-      <section class="bracket" aria-label="トーナメント表">
-        <div><h2>準々決勝</h2><div class="match"><div class="team winner">Blue Falcons</div><div class="team">Red Bears</div></div><div class="match"><div class="team">Green Owls</div><div class="team winner">Golden Foxes</div></div></div>
-        <div><h2>準決勝</h2><div class="match"><div class="team winner">Blue Falcons</div><div class="team">Golden Foxes</div></div></div>
-        <div><h2>決勝</h2><div class="match"><div class="team champion">Blue Falcons 🏆</div><div class="team">—</div></div></div>
-      </section>
+      <p id="status">参加者を読み込んでいます…</p>
+      <section id="bracket" class="bracket" aria-label="トーナメント表"></section>
       <footer>HTML と CSS だけで構成されています。</footer>
     </main>
+    <script src="./app.js" defer></script>
   </body>
 </html>
