@@ -61,9 +61,14 @@ function saveWinner_(parameter) {
   const id = String(parameter.tournamentId || ''), round = String(parameter.round || ''), order = Number(parameter.order), winner = String(parameter.winner || '');
   const values = sheet.getDataRange().getValues();
   const index = values.findIndex((row, i) => i > 0 && String(row[7]) === id && String(row[1]) === round && Number(row[2]) === order);
-  if (index < 0) throw new Error('対戦が見つかりません');
-  sheet.getRange(index + 1, 6).setValue(winner);
-  sheet.getRange(index + 1, 7).setValue('完了');
+  if (index < 0) {
+    // 対戦行が未作成でも、勝敗情報を新規作成して保存する。
+    const matchId = `${id}-R${round}-M${order}`;
+    sheet.appendRow([matchId, round, order, '', '', winner, '完了', id]);
+  } else {
+    sheet.getRange(index + 1, 6).setValue(winner);
+    sheet.getRange(index + 1, 7).setValue('完了');
+  }
   return jsonResponse_({ saved: true });
 }
 
