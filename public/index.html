@@ -14,6 +14,7 @@
       input, button { padding: .7rem .8rem; border: 1px solid #dbe3ef; border-radius: 8px; font: inherit; }
       input { flex: 1; }
       button { cursor: pointer; color: #fff; border-color: #6c63ff; background: #6c63ff; }
+      #new-tournament { margin-bottom: 1rem; background: #53657d; border-color: #53657d; }
       .team { width: 100%; color: #172033; text-align: left; background: #f8faff; }
       .delete { margin-top: .25rem; padding: .25rem .45rem; color: #b42318; border-color: #f2c5c1; background: #fff; font-size: .75rem; }
       .bracket { display: grid; grid-template-columns: repeat(var(--rounds, 1), minmax(180px, 1fr)); gap: 1rem; align-items: start; }
@@ -30,6 +31,7 @@
     <main>
       <h1>春季トーナメント</h1>
       <p>参加者を手動登録してトーナメント表を作成します。</p>
+      <button id="new-tournament" type="button">新しいトーナメント</button>
       <form id="participant-form"><input id="participant-name" placeholder="参加者名を入力" required /><button type="submit">登録</button></form>
       <p id="status">参加者を登録してください</p>
       <section id="bracket" class="bracket" aria-label="トーナメント表"></section>

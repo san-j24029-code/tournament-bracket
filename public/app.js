@@ -1,6 +1,8 @@
 // GASのWebアプリURLを設定すると、GASから参加者データを取得できます。
 const API_URL = "https://script.google.com/macros/s/AKfycbz0HCH0S-yDo3HCVMLgSVZjcVXJrqGsTlldbS_wefz9q7Mzx9coswzwsSt6EBhpHDOPJg/exec";
 let participants = [];
+let tournamentId = localStorage.getItem("tournamentId") || crypto.randomUUID();
+localStorage.setItem("tournamentId", tournamentId);
 
 function normalizeParticipants_(items) {
   return (items || []).map((item, index) => typeof item === "string"
@@ -63,17 +65,26 @@ document.querySelector("#participant-form").addEventListener("submit", async eve
   if (!name) return;
   try {
     document.querySelector("#status").textContent = "登録しています…";
-    await request_("register", { name });
+    await request_("register", { name, tournamentId });
     input.value = "";
-    const data = await request_("list");
+    const data = await request_("list", { tournamentId });
     participants = normalizeParticipants_(data.participants);
     render();
   } catch (error) { document.querySelector("#status").textContent = error.message; }
 });
 
-request_("list")
+request_("list", { tournamentId })
   .then(data => { participants = normalizeParticipants_(data.participants); render(); })
   .catch(error => { document.querySelector("#status").textContent = error.message; });
+
+document.querySelector("#new-tournament").addEventListener("click", () => {
+  tournamentId = crypto.randomUUID();
+  localStorage.setItem("tournamentId", tournamentId);
+  participants = [];
+  bracketRounds = [];
+  bracketParticipantKey = "";
+  render();
+});
 
 // 対戦者をクリックして勝者を次ラウンドへ進める。
 let bracketRounds = [];
