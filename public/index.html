@@ -19,6 +19,10 @@
       #new-tournament { margin-bottom: 1rem; color: #53657d; border-color: #cbd7e5; background: #f7f9fc; }
       #admin-login { margin-bottom: 1rem; }
       .admin-only { display: none; }
+      #login-screen { width: min(92vw, 420px); padding: 2rem; border: 1px solid #cbd7e5; border-radius: 12px; background: #fff; box-shadow: 0 16px 36px rgb(31 52 86 / 12%); text-align: center; }
+      #login-screen h1 { font-size: 1.5rem; }
+      #login-screen button { margin: .35rem; }
+      .hidden { display: none !important; }
       .team { width: 100%; color: #172033; text-align: left; background: #f8faff; }
       .delete { margin-top: .25rem; padding: .25rem .45rem; color: #b42318; border-color: #f2c5c1; background: #fff; font-size: .75rem; }
       .bracket { display: grid; grid-template-columns: repeat(var(--rounds, 1), minmax(180px, 1fr)); gap: 1rem; align-items: start; }
@@ -33,10 +37,16 @@
     </style>
   </head>
   <body>
-    <main>
+    <section id="login-screen">
+      <h1>トーナメントシステム</h1>
+      <p>ログインする利用者区分を選択してください。</p>
+      <button id="admin-login-start" type="button">管理者ログイン</button>
+      <button id="user-login-start" type="button">利用者として閲覧</button>
+    </section>
+    <main class="hidden">
       <h1>春季トーナメント</h1>
       <p>参加者を手動登録してトーナメント表を作成します。</p>
-      <button id="admin-login" type="button">管理者ログイン</button>
+      <button id="admin-login" class="hidden" type="button">管理者ログイン</button>
       <div class="admin-only">
         <button id="new-tournament" type="button">新しいトーナメント</button>
         <button id="reset-tournament" type="button">現在の大会をリセット</button>

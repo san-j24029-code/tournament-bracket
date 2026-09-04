@@ -5,6 +5,11 @@ let tournamentId = localStorage.getItem("tournamentId") || crypto.randomUUID();
 localStorage.setItem("tournamentId", tournamentId);
 let adminPassword = sessionStorage.getItem("adminPassword") || "";
 
+function enterAsUser_() {
+  document.querySelector("#login-screen").classList.add("hidden");
+  document.querySelector("main").classList.remove("hidden");
+}
+
 function normalizeParticipants_(items) {
   return (items || []).map((item, index) => typeof item === "string"
     ? { id: `P${String(index + 1).padStart(3, "0")}`, name: item, seed: index + 1 }
@@ -83,6 +88,20 @@ document.querySelector("#admin-login").addEventListener("click", async () => {
     sessionStorage.setItem("adminPassword", password);
     document.querySelectorAll(".admin-only").forEach(element => { element.style.display = "block"; });
     document.querySelector("#admin-login").textContent = "管理者ログイン済み";
+  } catch (error) { alert(error.message); }
+});
+
+document.querySelector("#user-login-start").addEventListener("click", enterAsUser_);
+document.querySelector("#admin-login-start").addEventListener("click", async () => {
+  const password = prompt("管理者パスワードを入力してください");
+  if (password === null) return;
+  try {
+    await request_("login", { password });
+    adminPassword = password;
+    sessionStorage.setItem("adminPassword", password);
+    document.querySelector("#login-screen").classList.add("hidden");
+    document.querySelector("main").classList.remove("hidden");
+    document.querySelectorAll(".admin-only").forEach(element => { element.style.display = "block"; });
   } catch (error) { alert(error.message); }
 });
 
