@@ -6,10 +6,12 @@ function doGet(e) {
     const mode = e?.parameter?.mode || 'list';
     if (mode === 'list') return jsonResponse_({ participants: getParticipants_(e.parameter.tournamentId) });
     if (mode === 'login') return login_(e.parameter);
+    if (mode === 'get_winners') return getWinners_(e.parameter);
     requireAdmin_(e.parameter.password);
     if (mode === 'register') return registerParticipant_(e.parameter);
     if (mode === 'delete') return deleteParticipant_(e.parameter);
     if (mode === 'reset') return resetTournament_(e.parameter);
+    if (mode === 'save_winner') return saveWinner_(e.parameter);
     throw new Error(`未対応のmodeです: ${mode}`);
   } catch (error) {
     return jsonResponse_({ error: error.message });
@@ -45,6 +47,24 @@ function resetTournament_(parameter) {
     if (String(values[i][4]) === tournamentId) sheet.deleteRow(i + 1);
   }
   return jsonResponse_({ reset: true });
+}
+
+function getWinners_(parameter) {
+  const id = String(parameter.tournamentId || '');
+  const values = getParticipantSheet_().getParent().getSheetByName('対戦表')?.getDataRange().getValues() || [];
+  return jsonResponse_({ winners: values.slice(1).filter(row => String(row[7]) === id && row[5]).map(row => ({ round: row[1], order: row[2], winner: row[5] })) });
+}
+
+function saveWinner_(parameter) {
+  const sheet = getParticipantSheet_().getParent().getSheetByName('対戦表');
+  if (!sheet) throw new Error('「対戦表」シートがありません');
+  const id = String(parameter.tournamentId || ''), round = String(parameter.round || ''), order = Number(parameter.order), winner = String(parameter.winner || '');
+  const values = sheet.getDataRange().getValues();
+  const index = values.findIndex((row, i) => i > 0 && String(row[7]) === id && String(row[1]) === round && Number(row[2]) === order);
+  if (index < 0) throw new Error('対戦が見つかりません');
+  sheet.getRange(index + 1, 6).setValue(winner);
+  sheet.getRange(index + 1, 7).setValue('完了');
+  return jsonResponse_({ saved: true });
 }
 
 function registerParticipant_(parameter) {

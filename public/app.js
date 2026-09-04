@@ -115,7 +115,7 @@ if (pageRole === "admin") {
 }
 
 request_("list", { tournamentId })
-  .then(data => { participants = normalizeParticipants_(data.participants); render(); })
+  .then(data => { participants = normalizeParticipants_(data.participants); render(); return syncWinners_(); })
   .catch(error => { document.querySelector("#status").textContent = error.message; });
 
 // 利用者画面は5秒ごとに最新の参加者情報を取得する。
@@ -125,6 +125,7 @@ setInterval(async () => {
     const data = await request_("list", { tournamentId });
     participants = normalizeParticipants_(data.participants);
     render();
+    await syncWinners_();
   } catch (error) {
     document.querySelector("#status").textContent = error.message;
   }
@@ -188,6 +189,17 @@ function selectWinner_(r, i, winner) {
   if (r < bracketRounds.length - 1) bracketRounds[r + 1][nextIndex][side] = winner;
 }
 
+async function syncWinners_() {
+  const data = await request_("get_winners", { tournamentId });
+  data.winners.forEach(item => {
+    const r = Number(item.round) - 1, i = Number(item.order) - 1;
+    const match = bracketRounds[r]?.[i];
+    const winner = match && [match.a, match.b].find(team => team?.name === item.winner);
+    if (winner) selectWinner_(r, i, winner);
+  });
+  render();
+}
+
 function resetAfter_(r, i) {
   const match = bracketRounds[r][i];
   match.winner = null;
@@ -214,5 +226,9 @@ document.querySelector("#bracket").addEventListener("click", event => {
   if (!button) return;
   const r = Number(button.dataset.round), i = Number(button.dataset.match);
   const match = bracketRounds[r][i];
-  if (match[button.dataset.side]) { selectWinner_(r, i, match[button.dataset.side]); render(); }
+  if (match[button.dataset.side]) {
+    const winner = match[button.dataset.side];
+    selectWinner_(r, i, winner); render();
+    request_("save_winner", { tournamentId, round: r + 1, order: i + 1, winner: winner.name }).catch(error => { document.querySelector("#status").textContent = error.message; });
+  }
 });
