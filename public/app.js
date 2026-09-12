@@ -214,7 +214,6 @@ function resetAfter_(r, i) {
 
 document.addEventListener("click", event => {
   const deleteButton = event.target.closest("[data-delete-id]");
-  if (deleteButton && !adminMode) return;
   if (deleteButton) {
     if (!confirm("この参加者を削除しますか？")) return;
     request_("delete", { id: deleteButton.dataset.deleteId })
