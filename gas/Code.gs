@@ -1,13 +1,10 @@
 const PARTICIPANT_SHEET = '参加者';
-const ADMIN_PASSWORD = 'admin';
-
 function doGet(e) {
   try {
     const mode = e?.parameter?.mode || 'list';
     if (mode === 'list') return jsonResponse_({ participants: getParticipants_(e.parameter.tournamentId) });
-    if (mode === 'login') return login_(e.parameter);
+    if (mode === 'login') return jsonResponse_({ authenticated: true });
     if (mode === 'get_winners') return getWinners_(e.parameter);
-    requireAdmin_(e.parameter.password);
     if (mode === 'register') return registerParticipant_(e.parameter);
     if (mode === 'delete') return deleteParticipant_(e.parameter);
     if (mode === 'reset') return resetTournament_(e.parameter);
@@ -16,15 +13,6 @@ function doGet(e) {
   } catch (error) {
     return jsonResponse_({ error: error.message });
   }
-}
-
-function login_(parameter) {
-  if (String(parameter.password || '') !== ADMIN_PASSWORD) throw new Error('パスワードが違います');
-  return jsonResponse_({ authenticated: true });
-}
-
-function requireAdmin_(password) {
-  if (String(password || '') !== ADMIN_PASSWORD) throw new Error('管理者ログインが必要です');
 }
 
 function deleteParticipant_(parameter) {

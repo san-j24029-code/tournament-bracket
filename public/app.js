@@ -5,7 +5,7 @@ let tournamentId = localStorage.getItem("tournamentId") || crypto.randomUUID();
 localStorage.setItem("tournamentId", tournamentId);
 const pageRole = location.pathname.endsWith("/admin.html") ? "admin" : location.pathname.endsWith("/user.html") ? "user" : "select";
 // user.htmlでは、管理者のセッションが残っていても必ず閲覧専用にする。
-let adminPassword = pageRole === "user" ? "" : sessionStorage.getItem("adminPassword") || "";
+const adminMode = pageRole === "admin";
 
 function enterAsUser_() {
   document.body.classList.add("viewer-mode");
@@ -61,7 +61,7 @@ function render() {
 }
 
 async function request_(mode, params = {}) {
-  const query = new URLSearchParams({ mode, ...params, ...(adminPassword ? { password: adminPassword } : {}) });
+  const query = new URLSearchParams({ mode, ...params });
   const response = await fetch(`${API_URL}?${query}`, { cache: "no-store" });
   const data = await response.json();
   if (data.error) throw new Error(data.error);
@@ -84,28 +84,12 @@ document.querySelector("#participant-form").addEventListener("submit", async eve
 });
 
 document.querySelector("#admin-login")?.addEventListener("click", async () => {
-  const password = prompt("管理者パスワードを入力してください");
-  if (password === null) return;
-  try {
-    await request_("login", { password });
-    adminPassword = password;
-    sessionStorage.setItem("adminPassword", password);
-    document.body.classList.remove("viewer-mode");
-    document.querySelectorAll(".admin-only").forEach(element => { element.style.display = "block"; });
-    document.querySelector("#admin-login").textContent = "管理者ログイン済み";
-  } catch (error) { alert(error.message); }
+  location.href = "./admin.html";
 });
 
 document.querySelector("#user-login-start")?.addEventListener("click", () => { location.href = "./user.html"; });
 document.querySelector("#admin-login-start")?.addEventListener("click", async () => {
-  const password = prompt("管理者パスワードを入力してください");
-  if (password === null) return;
-  try {
-    await request_("login", { password });
-    adminPassword = password;
-    sessionStorage.setItem("adminPassword", password);
-    location.href = "./admin.html";
-  } catch (error) { alert(error.message); }
+  location.href = "./admin.html";
 });
 
 if (pageRole === "user") enterAsUser_();
@@ -122,7 +106,7 @@ request_("list", { tournamentId })
 
 // 利用者画面は5秒ごとに最新の参加者情報を取得する。
 setInterval(async () => {
-  if (adminPassword) return;
+  if (adminMode) return;
   try {
     const data = await request_("list", { tournamentId });
     participants = normalizeParticipants_(data.participants);
@@ -230,7 +214,7 @@ function resetAfter_(r, i) {
 
 document.addEventListener("click", event => {
   const deleteButton = event.target.closest("[data-delete-id]");
-  if (deleteButton && !adminPassword) return;
+  if (deleteButton && !adminMode) return;
   if (deleteButton) {
     if (!confirm("この参加者を削除しますか？")) return;
     request_("delete", { id: deleteButton.dataset.deleteId })
@@ -240,7 +224,7 @@ document.addEventListener("click", event => {
     return;
   }
   const button = event.target.closest("button[data-round]");
-  if (!button || pageRole !== "admin" || !adminPassword) return;
+  if (!button || pageRole !== "admin") return;
   const r = Number(button.dataset.round), i = Number(button.dataset.match);
   const match = bracketRounds[r][i];
   const winner = match[button.dataset.side];
