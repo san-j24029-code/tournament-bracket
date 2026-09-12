@@ -3,7 +3,7 @@ const API_URL = "https://script.google.com/macros/s/AKfycbz0HCH0S-yDo3HCVMLgSVZj
 let participants = [];
 let tournamentId = localStorage.getItem("tournamentId") || crypto.randomUUID();
 localStorage.setItem("tournamentId", tournamentId);
-const pageRole = location.pathname.endsWith("/admin.html") ? "admin" : location.pathname.endsWith("/user.html") ? "user" : "select";
+const pageRole = location.pathname.endsWith("/admin.html") || document.body.classList.contains("admin-mode") ? "admin" : location.pathname.endsWith("/user.html") || document.body.classList.contains("viewer-mode") ? "user" : "select";
 // user.htmlでは、管理者のセッションが残っていても必ず閲覧専用にする。
 const adminMode = pageRole === "admin";
 
