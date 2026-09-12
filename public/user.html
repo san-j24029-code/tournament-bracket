@@ -38,6 +38,16 @@
       .match::before { content: "VS"; position: absolute; z-index: 1; top: 50%; left: 50%; transform: translate(-50%, -50%); padding: .15rem .35rem; border: 1px solid #ffcf4a; border-radius: 999px; color: #ffcf4a; background: #11182b; font-size: .65rem; font-weight: 700; }
       .round .match::before { content: "VS"; display: block; border: 1px solid #ffcf4a; }
       .round:not(:first-child) .match::before { content: "VS"; display: block; top: 50%; left: 50%; width: auto; border: 1px solid #ffcf4a; }
+      body { background-color: #050509; background-image: radial-gradient(circle, #ffcf4a 1px, transparent 2px), linear-gradient(90deg, transparent 49%, rgb(38 75 190 / 20%) 50%, transparent 51%), linear-gradient(0deg, transparent 49%, rgb(38 75 190 / 20%) 50%, transparent 51%); background-size: 34px 34px, 68px 68px, 68px 68px; }
+      main { border-color: #315bd6; background: #0b0b18; box-shadow: 0 0 0 4px #101b4c, 0 0 35px rgb(49 91 214 / 50%); }
+      main::before { content: "●  ●  ●   PAC-TOURNAMENT / PLAYER 1"; color: #ffcf4a; background: #080812; border-color: #315bd6; }
+      h1 { color: #ffdf58; text-shadow: 3px 3px 0 #bd5a16, 0 0 14px #ffcf4a; }
+      h1::before { content: "◉ "; color: #ffcf4a; }
+      .match { border-color: #315bd6; background: #080812; box-shadow: inset 0 0 0 2px #111d50; }
+      .team { border-color: #315bd6; background: #111d50; color: #fff; }
+      .winner { border-color: #ffcf4a; background: #4a3214; color: #ffdf58; box-shadow: 0 0 14px rgb(255 207 74 / 35%); }
+      h2 { color: #ffcf4a; }
+      h2::before { content: "• "; color: #ef3f63; }
       .match { width: 100%; min-width: 0; box-sizing: border-box; }
       .team { width: 100%; min-width: 0; box-sizing: border-box; }
     </style>
