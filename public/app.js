@@ -1,6 +1,7 @@
 // GASのWebアプリURLを設定すると、GASから参加者データを取得できます。
 const API_URL = "https://script.google.com/macros/s/AKfycbz0HCH0S-yDo3HCVMLgSVZjcVXJrqGsTlldbS_wefz9q7Mzx9coswzwsSt6EBhpHDOPJg/exec";
 let participants = [];
+let manualMatches = [];
 let tournamentId = localStorage.getItem("tournamentId") || crypto.randomUUID();
 localStorage.setItem("tournamentId", tournamentId);
 const pageRole = location.pathname.endsWith("/admin.html") || document.body.classList.contains("admin-mode") ? "admin" : location.pathname.endsWith("/user.html") || document.body.classList.contains("viewer-mode") ? "user" : "select";
@@ -79,6 +80,8 @@ document.querySelector("#participant-form").addEventListener("submit", async eve
     input.value = "";
     const data = await request_("list", { tournamentId });
     participants = normalizeParticipants_(data.participants);
+    refreshPairingOptions_();
+    await loadMatches_();
     render();
   } catch (error) { document.querySelector("#status").textContent = error.message; }
 });
@@ -101,7 +104,7 @@ if (pageRole === "admin") {
 }
 
 request_("list", { tournamentId })
-  .then(data => { participants = normalizeParticipants_(data.participants); render(); return syncWinners_(); })
+  .then(async data => { participants = normalizeParticipants_(data.participants); refreshPairingOptions_(); await loadMatches_(); render(); return syncWinners_(); })
   .catch(error => { document.querySelector("#status").textContent = error.message; });
 
 // 利用者画面は5秒ごとに最新の参加者情報を取得する。
@@ -163,7 +166,10 @@ function render() {
   const byes = size % 2;
   // 勝者クリック後は既存の状態を保持し、参加者が変わった時だけ初期化する。
   if (!bracketRounds.length || bracketParticipantKey !== participantKey) {
-    const slots = [...participants].sort((a, b) => (a.seed ?? 999) - (b.seed ?? 999));
+    const byName = new Map(participants.map(participant => [participant.name, participant]));
+    const slots = manualMatches.length
+      ? manualMatches.sort((a, b) => a.order - b.order).flatMap(match => [byName.get(match.a), byName.get(match.b)]).filter(Boolean)
+      : [...participants].sort((a, b) => (a.seed ?? 999) - (b.seed ?? 999));
     if (slots.length % 2) slots.push(null);
     bracketRounds = [Array.from({ length: slots.length / 2 }, (_, i) => ({ a: slots[i * 2], b: slots[i * 2 + 1], winner: null }))];
     while (bracketRounds.at(-1).length > 1) bracketRounds.push(Array.from({ length: Math.ceil(bracketRounds.at(-1).length / 2) }, () => ({ a: null, b: null, winner: null })));
@@ -202,6 +208,11 @@ async function syncWinners_() {
   render();
 }
 
+async function loadMatches_() {
+  const data = await request_("get_matches", { tournamentId });
+  manualMatches = data.matches.filter(match => match.round === 1 && match.a && match.b);
+}
+
 function resetAfter_(r, i) {
   const match = bracketRounds[r][i];
   match.winner = null;
@@ -233,3 +244,25 @@ document.addEventListener("click", event => {
   request_("save_winner", { tournamentId, round: r + 1, order: i + 1, winner: winner.name })
     .catch(error => { document.querySelector("#status").textContent = error.message; });
 });
+
+document.querySelector("#pairing-form")?.addEventListener("submit", async event => {
+  event.preventDefault();
+  const a = document.querySelector("#pairing-a").value;
+  const b = document.querySelector("#pairing-b").value;
+  try {
+    await request_("save_match", { tournamentId, a, b });
+    await loadMatches_();
+    bracketRounds = [];
+    bracketParticipantKey = "";
+    render();
+    event.target.reset();
+  } catch (error) { document.querySelector("#status").textContent = error.message; }
+});
+
+function refreshPairingOptions_() {
+  ["#pairing-a", "#pairing-b"].forEach(selector => {
+    const select = document.querySelector(selector);
+    if (!select) return;
+    select.innerHTML = '<option value="">参加者を選択</option>' + participants.map(p => `<option value="${p.name}">${p.name}</option>`).join("");
+  });
+}

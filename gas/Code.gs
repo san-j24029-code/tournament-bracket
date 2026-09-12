@@ -5,6 +5,8 @@ function doGet(e) {
     if (mode === 'list') return jsonResponse_({ participants: getParticipants_(e.parameter.tournamentId) });
     if (mode === 'login') return jsonResponse_({ authenticated: true });
     if (mode === 'get_winners') return getWinners_(e.parameter);
+    if (mode === 'get_matches') return getMatches_(e.parameter);
+    if (mode === 'save_match') return saveMatch_(e.parameter);
     if (mode === 'register') return registerParticipant_(e.parameter);
     if (mode === 'delete') return deleteParticipant_(e.parameter);
     if (mode === 'reset') return resetTournament_(e.parameter);
@@ -54,6 +56,27 @@ function saveWinner_(parameter) {
     sheet.getRange(index + 1, 7).setValue('完了');
   }
   return jsonResponse_({ saved: true });
+}
+
+function getMatches_(parameter) {
+  const id = String(parameter.tournamentId || '');
+  const sheet = getParticipantSheet_().getParent().getSheetByName('対戦表');
+  if (!sheet) throw new Error('「対戦表」シートがありません');
+  return jsonResponse_({ matches: sheet.getDataRange().getValues().slice(1)
+    .filter(row => String(row[7]) === id)
+    .map(row => ({ id: String(row[0]), round: Number(row[1]), order: Number(row[2]), a: String(row[3] || ''), b: String(row[4] || ''), winner: String(row[5] || ''), state: String(row[6] || '') })) });
+}
+
+function saveMatch_(parameter) {
+  const tournamentId = String(parameter.tournamentId || ''), a = String(parameter.a || '').trim(), b = String(parameter.b || '').trim();
+  if (!tournamentId || !a || !b || a === b) throw new Error('異なる2名を選択してください');
+  const sheet = getParticipantSheet_().getParent().getSheetByName('対戦表');
+  if (!sheet) throw new Error('「対戦表」シートがありません');
+  const rows = sheet.getDataRange().getValues();
+  const used = rows.slice(1).filter(row => String(row[7]) === tournamentId && Number(row[1]) === 1);
+  const order = used.length + 1;
+  sheet.appendRow([`${tournamentId}-R1-M${order}`, 1, order, a, b, '', '未開始', tournamentId]);
+  return jsonResponse_({ saved: true, order });
 }
 
 function getWinners_(parameter) {
