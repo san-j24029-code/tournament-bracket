@@ -188,8 +188,8 @@ function render() {
   }
   const bracket = document.querySelector("#bracket");
   bracket.style.setProperty("--rounds", bracketRounds.length);
-  bracket.innerHTML = bracketRounds.map((round, r) => `<div class="round"><h2>${r === bracketRounds.length - 1 ? "決勝" : `${r + 1}回戦`}</h2>${round.map((m, i) => `<div class="match">${["a", "b"].map(side => m[side] ? `<button class="team ${m.winner?.id === m[side].id ? "winner" : ""}" data-round="${r}" data-match="${i}" data-side="${side}">${m[side].name}</button>` : `<div class="team">—</div>`).join("")}</div>`).join("")}</div>`).join("");
-  document.querySelector("#status").textContent = `${participants.length}人（不戦勝 ${byes}枠）※勝者をクリック`;
+  bracket.innerHTML = bracketRounds.map((round, r) => `<div class="round"><h2>${r === bracketRounds.length - 1 ? "決勝" : `${r + 1}回戦`}</h2>${round.map((m, i) => `<div class="match">${["a", "b"].map(side => m[side] ? (pageRole === "admin" ? `<button class="team ${m.winner?.id === m[side].id ? "winner" : ""}" data-round="${r}" data-match="${i}" data-side="${side}">${m[side].name}</button>` : `<div class="team ${m.winner?.id === m[side].id ? "winner" : ""}">${m[side].name}</div>`) : `<div class="team">—</div>`).join("")}</div>`).join("")}</div>`).join("");
+  document.querySelector("#status").textContent = `${participants.length}人（不戦勝 ${byes}枠）※勝敗はスプレッドシートで管理`;
   const list = document.querySelector("#participant-list ul");
   if (list) list.innerHTML = participants.map(p => `<li>${p.name}<button class="delete" data-delete-id="${p.id}">削除</button></li>`).join("");
 }
@@ -234,19 +234,19 @@ document.addEventListener("click", event => {
   if (deleteButton) {
     if (!confirm("この参加者を削除しますか？")) return;
     request_("delete", { id: deleteButton.dataset.deleteId })
-      .then(() => request_("list"))
+      .then(() => request_("list", { tournamentId }))
       .then(data => { participants = normalizeParticipants_(data.participants); bracketRounds = []; bracketParticipantKey = ""; render(); })
       .catch(error => { document.querySelector("#status").textContent = error.message; });
     return;
   }
   const button = event.target.closest("button[data-round]");
-  if (!button) return;
-  if (pageRole === "admin") return;
+  if (!button || pageRole !== "admin" || !adminPassword) return;
   const r = Number(button.dataset.round), i = Number(button.dataset.match);
   const match = bracketRounds[r][i];
-  if (match[button.dataset.side]) {
-    const winner = match[button.dataset.side];
-    selectWinner_(r, i, winner); render();
-    request_("save_winner", { tournamentId, round: r + 1, order: i + 1, winner: winner.name }).catch(error => { document.querySelector("#status").textContent = error.message; });
-  }
+  const winner = match[button.dataset.side];
+  if (!winner) return;
+  selectWinner_(r, i, winner);
+  render();
+  request_("save_winner", { tournamentId, round: r + 1, order: i + 1, winner: winner.name })
+    .catch(error => { document.querySelector("#status").textContent = error.message; });
 });

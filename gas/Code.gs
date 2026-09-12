@@ -7,11 +7,11 @@ function doGet(e) {
     if (mode === 'list') return jsonResponse_({ participants: getParticipants_(e.parameter.tournamentId) });
     if (mode === 'login') return login_(e.parameter);
     if (mode === 'get_winners') return getWinners_(e.parameter);
-    if (mode === 'save_winner') return saveWinner_(e.parameter);
     requireAdmin_(e.parameter.password);
     if (mode === 'register') return registerParticipant_(e.parameter);
     if (mode === 'delete') return deleteParticipant_(e.parameter);
     if (mode === 'reset') return resetTournament_(e.parameter);
+    if (mode === 'save_winner') return saveWinner_(e.parameter);
     throw new Error(`未対応のmodeです: ${mode}`);
   } catch (error) {
     return jsonResponse_({ error: error.message });
@@ -49,28 +49,31 @@ function resetTournament_(parameter) {
   return jsonResponse_({ reset: true });
 }
 
-function getWinners_(parameter) {
-  const id = String(parameter.tournamentId || '');
-  const values = getParticipantSheet_().getParent().getSheetByName('対戦表')?.getDataRange().getValues() || [];
-  return jsonResponse_({ winners: values.slice(1).filter(row => String(row[7]) === id && row[5]).map(row => ({ round: row[1], order: row[2], winner: row[5] })) });
-}
-
 function saveWinner_(parameter) {
   const sheet = getParticipantSheet_().getParent().getSheetByName('対戦表');
   if (!sheet) throw new Error('「対戦表」シートがありません');
-  const id = String(parameter.tournamentId || ''), round = String(parameter.round || ''), order = Number(parameter.order), winner = String(parameter.winner || '');
+  const tournamentId = String(parameter.tournamentId || '');
+  const round = Number(parameter.round);
+  const order = Number(parameter.order);
+  const winner = String(parameter.winner || '');
+  if (!tournamentId || !round || !order || !winner) throw new Error('勝敗情報が不足しています');
   const values = sheet.getDataRange().getValues();
-  const index = values.findIndex((row, i) => i > 0 && String(row[7]) === id && String(row[1]) === round && Number(row[2]) === order);
+  const index = values.findIndex((row, i) => i > 0 && String(row[7]) === tournamentId && Number(row[1]) === round && Number(row[2]) === order);
   if (index < 0) {
-    // 対戦行が未作成でも、勝敗情報を新規作成して保存する。
-    const matchId = `${id}-R${round}-M${order}`;
-    sheet.appendRow([matchId, round, order, '', '', winner, '完了', id]);
+    sheet.appendRow([`${tournamentId}-R${round}-M${order}`, round, order, '', '', winner, '完了', tournamentId]);
   } else {
     sheet.getRange(index + 1, 6).setValue(winner);
     sheet.getRange(index + 1, 7).setValue('完了');
   }
   return jsonResponse_({ saved: true });
 }
+
+function getWinners_(parameter) {
+  const id = String(parameter.tournamentId || '');
+  const values = getParticipantSheet_().getParent().getSheetByName('対戦表')?.getDataRange().getValues() || [];
+  return jsonResponse_({ winners: values.slice(1).filter(row => String(row[7]) === id && row[5]).map(row => ({ round: row[1], order: row[2], winner: row[5] })) });
+}
+
 
 function registerParticipant_(parameter) {
   const name = String(parameter.name || '').trim();
