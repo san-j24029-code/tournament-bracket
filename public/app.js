@@ -2,7 +2,6 @@
 const API_URL = "https://script.google.com/macros/s/AKfycbz0HCH0S-yDo3HCVMLgSVZjcVXJrqGsTlldbS_wefz9q7Mzx9coswzwsSt6EBhpHDOPJg/exec";
 let participants = [];
 let manualMatches = [];
-let tournamentLocked = false;
 let tournamentId = localStorage.getItem("tournamentId") || crypto.randomUUID();
 localStorage.setItem("tournamentId", tournamentId);
 const pageRole = location.pathname.endsWith("/admin.html") || document.body.classList.contains("admin-mode") ? "admin" : location.pathname.endsWith("/user.html") || document.body.classList.contains("viewer-mode") ? "user" : "select";
@@ -81,7 +80,6 @@ document.querySelector("#participant-form").addEventListener("submit", async eve
     input.value = "";
     const data = await request_("list", { tournamentId });
     participants = normalizeParticipants_(data.participants);
-    tournamentLocked = Boolean(data.locked);
     refreshPairingOptions_();
     await loadMatches_();
     render();
@@ -106,7 +104,7 @@ if (pageRole === "admin") {
 }
 
 request_("list", { tournamentId })
-  .then(async data => { participants = normalizeParticipants_(data.participants); tournamentLocked = Boolean(data.locked); refreshPairingOptions_(); await loadMatches_(); render(); return syncWinners_(); })
+  .then(async data => { participants = normalizeParticipants_(data.participants); refreshPairingOptions_(); await loadMatches_(); render(); return syncWinners_(); })
   .catch(error => { document.querySelector("#status").textContent = error.message; });
 
 // 利用者画面は5秒ごとに最新の参加者情報を取得する。
@@ -201,10 +199,6 @@ function render() {
   document.querySelector("#status").textContent = `${participants.length}人（不戦勝 ${byes}枠）※勝敗はスプレッドシートで管理`;
   const list = document.querySelector("#participant-list ul");
   if (list) list.innerHTML = participants.map(p => `<li>${p.name}<button class="delete" data-delete-id="${p.id}">削除</button></li>`).join("");
-  const lockButton = document.querySelector("#lock-tournament");
-  if (lockButton) lockButton.disabled = tournamentLocked || participants.length !== 11;
-  const form = document.querySelector("#participant-form");
-  if (form) form.querySelector("button").disabled = tournamentLocked;
 }
 
 function selectWinner_(r, i, winner) {
@@ -282,14 +276,6 @@ document.querySelector("#pairing-form")?.addEventListener("submit", async event 
   } catch (error) { document.querySelector("#status").textContent = error.message; }
 });
 
-document.querySelector("#lock-tournament")?.addEventListener("click", async () => {
-  if (participants.length !== 11 || !confirm("11人でトーナメント表を確定しますか？")) return;
-  try {
-    await request_("lock_tournament", { tournamentId });
-    tournamentLocked = true;
-    render();
-  } catch (error) { document.querySelector("#status").textContent = error.message; }
-});
 
 function refreshPairingOptions_() {
   ["#pairing-a", "#pairing-b"].forEach(selector => {

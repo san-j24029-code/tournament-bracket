@@ -1,18 +1,13 @@
 const PARTICIPANT_SHEET = '参加者';
-const TARGET_PARTICIPANTS = 11;
 function doGet(e) {
   try {
     const mode = e?.parameter?.mode || 'list';
-    if (mode === 'list') {
-      const tournamentId = String(e.parameter.tournamentId || '');
-      return jsonResponse_({ participants: getParticipants_(tournamentId), locked: isTournamentLocked_(tournamentId) });
-    }
+    if (mode === 'list') return jsonResponse_({ participants: getParticipants_(e.parameter.tournamentId) });
     if (mode === 'login') return jsonResponse_({ authenticated: true });
     if (mode === 'get_winners') return getWinners_(e.parameter);
     if (mode === 'get_matches') return getMatches_(e.parameter);
     if (mode === 'save_match') return saveMatch_(e.parameter);
     if (mode === 'register') return registerParticipant_(e.parameter);
-    if (mode === 'lock_tournament') return lockTournament_(e.parameter);
     if (mode === 'delete') return deleteParticipant_(e.parameter);
     if (mode === 'reset') return resetTournament_(e.parameter);
     if (mode === 'save_winner') return saveWinner_(e.parameter);
@@ -41,19 +36,7 @@ function resetTournament_(parameter) {
   for (let i = values.length - 1; i >= 1; i--) {
     if (String(values[i][4]) === tournamentId) sheet.deleteRow(i + 1);
   }
-  PropertiesService.getScriptProperties().deleteProperty(`tournament_locked:${tournamentId}`);
   return jsonResponse_({ reset: true });
-}
-
-function lockTournament_(parameter) {
-  const tournamentId = String(parameter.tournamentId || '').trim();
-  if (getParticipants_(tournamentId).length !== TARGET_PARTICIPANTS) throw new Error(`参加者${TARGET_PARTICIPANTS}人で確定してください`);
-  PropertiesService.getScriptProperties().setProperty(`tournament_locked:${tournamentId}`, 'true');
-  return jsonResponse_({ locked: true });
-}
-
-function isTournamentLocked_(tournamentId) {
-  return Boolean(tournamentId && PropertiesService.getScriptProperties().getProperty(`tournament_locked:${tournamentId}`));
 }
 
 function saveWinner_(parameter) {
@@ -108,8 +91,6 @@ function registerParticipant_(parameter) {
   const tournamentId = String(parameter.tournamentId || '').trim();
   if (!name) throw new Error('名前は必須です');
   if (!tournamentId) throw new Error('大会IDは必須です');
-  if (isTournamentLocked_(tournamentId)) throw new Error('この大会は確定済みです');
-  if (getParticipants_(tournamentId).length >= TARGET_PARTICIPANTS) throw new Error(`参加者は${TARGET_PARTICIPANTS}人までです`);
   const sheet = getParticipantSheet_();
   const row = sheet.getLastRow() + 1;
   const id = `P${String(row - 1).padStart(3, '0')}`;
