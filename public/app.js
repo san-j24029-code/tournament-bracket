@@ -24,7 +24,7 @@ function createRounds(participants) {
   if (!participants.length) throw new Error("参加者がいません");
 
   // 参加人数をそのまま使い、奇数のときだけ1人を不戦勝にする。
-  const size = participants.length;
+  const size = 2 ** Math.ceil(Math.log2(participants.length));
   const slots = [...participants].sort((a, b) => (a.seed ?? 999) - (b.seed ?? 999));
   const byes = size - slots.length;
 
@@ -161,16 +161,21 @@ let bracketRounds = [];
 let bracketParticipantKey = "";
 function render() {
   if (!participants.length) return;
-  const size = participants.length;
+  const size = 2 ** Math.ceil(Math.log2(participants.length));
   const participantKey = participants.map(p => p.id).join(",");
-  const byes = size % 2;
+  const byes = size - participants.length;
   // 勝者クリック後は既存の状態を保持し、参加者が変わった時だけ初期化する。
   if (!bracketRounds.length || bracketParticipantKey !== participantKey) {
     const byName = new Map(participants.map(participant => [participant.name, participant]));
-    const slots = manualMatches.length
-      ? manualMatches.sort((a, b) => a.order - b.order).flatMap(match => [byName.get(match.a), byName.get(match.b)]).filter(Boolean)
-      : [...participants].sort((a, b) => (a.seed ?? 999) - (b.seed ?? 999));
-    if (slots.length % 2) slots.push(null);
+    const pairedNames = new Set();
+    const pairedSlots = manualMatches.sort((a, b) => a.order - b.order).flatMap(match => {
+      pairedNames.add(match.a); pairedNames.add(match.b);
+      return [byName.get(match.a), byName.get(match.b)];
+    }).filter(Boolean);
+    const remainingSlots = [...participants].filter(participant => !pairedNames.has(participant.name)).sort((a, b) => (a.seed ?? 999) - (b.seed ?? 999));
+    const slots = [...(manualMatches.length ? [...pairedSlots, ...remainingSlots] : remainingSlots)];
+    // 不戦勝を分散して配置し、特定の参加者に偏らないようにする。
+    for (let i = 0; i < byes; i++) slots.splice(Math.min(i * 2 + 1, slots.length), 0, null);
     bracketRounds = [Array.from({ length: slots.length / 2 }, (_, i) => ({ a: slots[i * 2], b: slots[i * 2 + 1], winner: null }))];
     while (bracketRounds.at(-1).length > 1) bracketRounds.push(Array.from({ length: Math.ceil(bracketRounds.at(-1).length / 2) }, () => ({ a: null, b: null, winner: null })));
     bracketRounds[0].forEach((m, i) => { if (m.a && !m.b) selectWinner_(0, i, m.a); if (!m.a && m.b) selectWinner_(0, i, m.b); });
