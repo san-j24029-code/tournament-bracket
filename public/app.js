@@ -168,14 +168,26 @@ function render() {
   if (!bracketRounds.length || bracketParticipantKey !== participantKey) {
     const byName = new Map(participants.map(participant => [participant.name, participant]));
     const pairedNames = new Set();
-    const pairedSlots = manualMatches.sort((a, b) => a.order - b.order).flatMap(match => {
+    const manualPairs = manualMatches.sort((a, b) => a.order - b.order).map(match => {
       pairedNames.add(match.a); pairedNames.add(match.b);
-      return [byName.get(match.a), byName.get(match.b)];
-    }).filter(Boolean);
+      return [byName.get(match.a), byName.get(match.b)].filter(Boolean);
+    }).filter(pair => pair.length === 2);
     const remainingSlots = [...participants].filter(participant => !pairedNames.has(participant.name)).sort((a, b) => (a.seed ?? 999) - (b.seed ?? 999));
-    const slots = [...(manualMatches.length ? [...pairedSlots, ...remainingSlots] : remainingSlots)];
-    // 不戦勝を分散して配置し、特定の参加者に偏らないようにする。
-    for (let i = 0; i < byes; i++) slots.splice(Math.min(i * 2 + 1, slots.length), 0, null);
+    const matchCount = size / 2;
+    const byeMatches = new Set(Array.from({ length: byes }, (_, i) => Math.floor((i + 0.5) * matchCount / byes)));
+    const slots = [];
+    let pairIndex = 0;
+    let remainingIndex = 0;
+    for (let matchIndex = 0; matchIndex < matchCount; matchIndex++) {
+      if (byeMatches.has(matchIndex)) {
+        slots.push(remainingSlots[remainingIndex++] ?? participants[remainingIndex++]);
+        slots.push(null);
+      } else if (manualPairs[pairIndex]) {
+        slots.push(...manualPairs[pairIndex++]);
+      } else {
+        slots.push(remainingSlots[remainingIndex++] ?? null, remainingSlots[remainingIndex++] ?? null);
+      }
+    }
     bracketRounds = [Array.from({ length: slots.length / 2 }, (_, i) => ({ a: slots[i * 2], b: slots[i * 2 + 1], winner: null }))];
     while (bracketRounds.at(-1).length > 1) bracketRounds.push(Array.from({ length: Math.ceil(bracketRounds.at(-1).length / 2) }, () => ({ a: null, b: null, winner: null })));
     bracketRounds[0].forEach((m, i) => { if (m.a && !m.b) selectWinner_(0, i, m.a); if (!m.a && m.b) selectWinner_(0, i, m.b); });
