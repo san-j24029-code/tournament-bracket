@@ -2,8 +2,8 @@
 const API_URL = "https://script.google.com/macros/s/AKfycbz0HCH0S-yDo3HCVMLgSVZjcVXJrqGsTlldbS_wefz9q7Mzx9coswzwsSt6EBhpHDOPJg/exec";
 let participants = [];
 let manualMatches = [];
-const urlParams = new URLSearchParams(location.search);
-let tournamentId = urlParams.get("tournamentId") || localStorage.getItem("tournamentId") || crypto.randomUUID();
+const FIXED_TOURNAMENT_ID = "TOURNAMENT001";
+let tournamentId = FIXED_TOURNAMENT_ID;
 localStorage.setItem("tournamentId", tournamentId);
 
 function updateTournamentUrl_() {
@@ -133,7 +133,7 @@ setInterval(async () => {
 }, 30000);
 
 document.querySelector("#new-tournament").addEventListener("click", () => {
-  tournamentId = crypto.randomUUID();
+  tournamentId = FIXED_TOURNAMENT_ID;
   localStorage.setItem("tournamentId", tournamentId);
   updateTournamentUrl_();
   participants = [];
