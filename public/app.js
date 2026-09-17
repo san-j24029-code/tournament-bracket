@@ -2,9 +2,20 @@
 const API_URL = "https://script.google.com/macros/s/AKfycbz0HCH0S-yDo3HCVMLgSVZjcVXJrqGsTlldbS_wefz9q7Mzx9coswzwsSt6EBhpHDOPJg/exec";
 let participants = [];
 let manualMatches = [];
-let tournamentId = localStorage.getItem("tournamentId") || crypto.randomUUID();
+const urlParams = new URLSearchParams(location.search);
+let tournamentId = urlParams.get("tournamentId") || localStorage.getItem("tournamentId") || crypto.randomUUID();
 localStorage.setItem("tournamentId", tournamentId);
-const pageRole = location.pathname.endsWith("/admin.html") || document.body.classList.contains("admin-mode") ? "admin" : location.pathname.endsWith("/user.html") || document.body.classList.contains("viewer-mode") ? "user" : "select";
+
+function updateTournamentUrl_() {
+  const url = new URL(location.href);
+  url.searchParams.set("tournamentId", tournamentId);
+  history.replaceState(null, "", url);
+}
+
+updateTournamentUrl_();
+const isAdminPage = location.pathname.endsWith("/admin.html") || location.pathname.endsWith("/admin");
+const isUserPage = location.pathname.endsWith("/user.html") || location.pathname.endsWith("/user");
+const pageRole = isAdminPage || document.body.classList.contains("admin-mode") ? "admin" : isUserPage || document.body.classList.contains("viewer-mode") ? "user" : "select";
 // user.htmlでは、管理者のセッションが残っていても必ず閲覧専用にする。
 const adminMode = pageRole === "admin";
 
@@ -123,6 +134,7 @@ setInterval(async () => {
 document.querySelector("#new-tournament").addEventListener("click", () => {
   tournamentId = crypto.randomUUID();
   localStorage.setItem("tournamentId", tournamentId);
+  updateTournamentUrl_();
   participants = [];
   bracketRounds = [];
   bracketParticipantKey = "";
