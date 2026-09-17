@@ -57,6 +57,9 @@
       h2::before { content: "• "; color: #ef3f63; }
       .match { width: 100%; min-width: 0; box-sizing: border-box; }
       .team { width: 100%; min-width: 0; box-sizing: border-box; }
+      #status.loading { display: inline-flex; align-items: center; gap: .6rem; padding: .65rem .9rem; border: 1px solid #ffcf4a; border-radius: 8px; color: #ffdf58; background: #241c0b; box-shadow: 0 0 12px rgb(255 207 74 / 25%); }
+      #status.loading::before { content: ""; width: .85rem; height: .85rem; border: 2px solid #6f7799; border-top-color: #ffcf4a; border-radius: 50%; animation: spin .8s linear infinite; }
+      @keyframes spin { to { transform: rotate(360deg); } }
     </style>
   </head>
   <body>

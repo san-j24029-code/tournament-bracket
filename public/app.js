@@ -87,7 +87,8 @@ document.querySelector("#participant-form").addEventListener("submit", async eve
   const name = input.value.trim();
   if (!name) return;
   try {
-    document.querySelector("#status").textContent = "登録しています…";
+    document.querySelector("#status").textContent = "登録中…";
+    document.querySelector("#status").classList.add("loading");
     await request_("register", { name, tournamentId });
     input.value = "";
     const data = await request_("list", { tournamentId });
@@ -95,7 +96,7 @@ document.querySelector("#participant-form").addEventListener("submit", async eve
     refreshPairingOptions_();
     await loadMatches_();
     render();
-  } catch (error) { document.querySelector("#status").textContent = error.message; }
+  } catch (error) { document.querySelector("#status").classList.remove("loading"); document.querySelector("#status").textContent = error.message; }
 });
 
 document.querySelector("#admin-login")?.addEventListener("click", async () => {
@@ -209,6 +210,7 @@ function render() {
   const bracket = document.querySelector("#bracket");
   bracket.style.setProperty("--rounds", bracketRounds.length);
   bracket.innerHTML = bracketRounds.map((round, r) => `<div class="round"><h2>${r === bracketRounds.length - 1 ? "決勝" : `${r + 1}回戦`}</h2>${round.map((m, i) => `<div class="match">${["a", "b"].map(side => m[side] ? (pageRole === "admin" ? `<button class="team ${m.winner?.id === m[side].id ? "winner" : ""}" data-round="${r}" data-match="${i}" data-side="${side}">${m[side].name}</button>` : `<div class="team ${m.winner?.id === m[side].id ? "winner" : ""}">${m[side].name}</div>`) : `<div class="team">—</div>`).join("")}</div>`).join("")}</div>`).join("");
+  document.querySelector("#status").classList.remove("loading");
   document.querySelector("#status").textContent = `${participants.length}人（不戦勝 ${byes}枠）※勝敗はスプレッドシートで管理`;
   const list = document.querySelector("#participant-list ul");
   if (list) list.innerHTML = participants.map(p => `<li>${p.name}<button class="delete" data-delete-id="${p.id}">削除</button></li>`).join("");
