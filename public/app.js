@@ -26,9 +26,10 @@ function enterAsUser_() {
 }
 
 function normalizeParticipants_(items) {
-  return (items || []).map((item, index) => typeof item === "string"
+  const normalized = (items || []).map((item, index) => typeof item === "string"
     ? { id: `P${String(index + 1).padStart(3, "0")}`, name: item, seed: index + 1 }
     : { ...item, id: item.id || `P${String(index + 1).padStart(3, "0")}`, name: item.name || item["参加者名"] || "名前未設定", seed: item.seed || index + 1 });
+  return [...new Map(normalized.filter(item => item.name).map(item => [item.name, item])).values()];
 }
 
 function createRounds(participants) {
@@ -118,7 +119,7 @@ request_("list", { tournamentId })
   .then(async data => { participants = normalizeParticipants_(data.participants); refreshPairingOptions_(); await loadMatches_(); render(); return syncWinners_(); })
   .catch(error => { document.querySelector("#status").textContent = error.message; });
 
-// 利用者画面は5秒ごとに最新の参加者情報を取得する。
+// 利用者画面は30秒ごとに最新の参加者情報を取得する。
 setInterval(async () => {
   if (adminMode) return;
   try {
@@ -129,7 +130,7 @@ setInterval(async () => {
   } catch (error) {
     document.querySelector("#status").textContent = error.message;
   }
-}, 5000);
+}, 30000);
 
 document.querySelector("#new-tournament").addEventListener("click", () => {
   tournamentId = crypto.randomUUID();

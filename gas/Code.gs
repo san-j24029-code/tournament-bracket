@@ -91,6 +91,7 @@ function registerParticipant_(parameter) {
   const tournamentId = String(parameter.tournamentId || '').trim();
   if (!name) throw new Error('名前は必須です');
   if (!tournamentId) throw new Error('大会IDは必須です');
+  if (getParticipants_(tournamentId).some(participant => participant.name === name)) throw new Error('同じ名前の参加者は登録できません');
   const sheet = getParticipantSheet_();
   const row = sheet.getLastRow() + 1;
   const id = `P${String(row - 1).padStart(3, '0')}`;
